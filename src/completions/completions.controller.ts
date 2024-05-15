@@ -1,52 +1,18 @@
-import { Controller, Post, Body, Inject, Headers } from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { Controller, Post, Body, Headers } from '@nestjs/common';
+import { CompletionsService } from './completions.service';
 import { ChatuService } from 'src/chatu/chatu.service';
+import { max } from 'rxjs';
 
-@Controller('chat')
-export class ChatController {
+@Controller('completions')
+export class CompletionsController {
   constructor(
-    private readonly chatuService: ChatuService,
-    private readonly chatService: ChatService
+    private readonly completionsService: CompletionsService,
+    private readonly chatuService: ChatuService
   ) {}
 
-  /*headers {
-  host: '172.18.0.6:3002',
-  connection: 'close',
-  'content-length': '719',
-  'user-agent': 'python-requests/2.31.0',
-  'accept-encoding': 'gzip, deflate, br',
-
-  'content-type': 'application/json',
-  'accept-charset': 'utf-8',
-  authorization: 'Bearer ukZ4AAFg5EAGHIizmojiMth6Ksix2ofYJ7MWB3O5Ak5'
-}
-body {
-  model: 'gpt-3.5',
-  stream: true,
-  temperature: 0.7,
-  top_p: 1,
-  frequency_penalty: 0,
-  presence_penalty: 0,
-  max_tokens: 512,
-  prompt: '你是一个聊天机器人，给用户合理的答案。\n' +
-    'Here is the chat histories between human and assistant, inside <histories></histories> XML tags.\n' +
-    '\n' +
-    '<histories>\n' +
-    'Human: 你好\n' +
-    'Assistant: 你好！我是小微，有什么问题我可以帮助你解决呢？\n' +
-    '</histories>\n' +
-    '\n' +
-    '\n' +
-    '\n' +
-    'Human: 天上飞的是什么\n' +
-    '\n' +
-    'Assistant: ',
-  stop: [ '\nHuman:', '</histories>' ],
-  user: '6a7c96a6-deb1-440e-9170-6d3617a5ec4e'
-}
-   */
-  @Post("completions")
+  @Post()
   async completions(@Body() body: any, @Headers() headers: any) {
+    console.log("/completions")
     console.log('headers', headers);
     console.log('body', body);
     // gpt-3.5 gpt-4.0 gpt-3.5-16k gpt-4.0-turbo
@@ -68,7 +34,11 @@ body {
         }
     }
 
-    let {prompt, model} = body;
+    let {prompt, model, max_tokens, temperature} = body;
+
+    max_tokens = max_tokens || 1024;
+
+    temperature = temperature || 0.7;
 
     if(!prompt){
         return {
@@ -90,10 +60,13 @@ body {
     let completion = await this.chatuService.getAsk({
         AccessToken: token,
         prompt: prompt,
-        model: model
+        model: model,
+        maxTokens: max_tokens,
+        temperature: temperature
     });
 
     console.log('completion', completion);
+    console.log('-----------');
 
     if (completion.code !== 0) {
         return completion;
