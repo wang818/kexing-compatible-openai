@@ -12,6 +12,7 @@ export class CompletionsController {
 
   @Post()
   async completions(@Body() body: any, @Headers() headers: any) {
+    console.log('-----------');
     console.log("/completions")
     console.log('headers', headers);
     console.log('body', body);
@@ -66,7 +67,7 @@ export class CompletionsController {
     });
 
     console.log('completion', completion);
-    console.log('-----------');
+
 
     if (completion.code !== 0) {
         return completion;
